@@ -50,5 +50,4 @@ function animate(time: any) {
     render();
 }
 
-requestAnimationFrame(animate);
 animate(0.4)
