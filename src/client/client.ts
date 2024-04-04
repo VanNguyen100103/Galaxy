@@ -1,41 +1,54 @@
-import * as THREE from 'three'
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-const scene = new THREE.Scene()
-const camera = new THREE.PerspectiveCamera(150, window.innerWidth / window.innerHeight, 0.1, 1000)
-camera.position.z = 3
 
-const renderer = new THREE.WebGLRenderer()
-renderer.setSize(window.innerWidth, window.innerHeight)
-document.body.appendChild(renderer.domElement)
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 30;
+const canvas = document.getElementById('c1') as HTMLCanvasElement;
+const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+renderer.setSize(window.innerWidth, window.innerHeight);
 
-const width = 3;
-const height = 3;
-const depth = 3;
-const geometry = new THREE.BoxGeometry(width, height, depth);
-const material = new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
-    wireframe: true,
-})
+const objects: any[] = [];
+const solarSystem = new THREE.Object3D();
+scene.add(solarSystem); // Thêm dòng này để thêm solarSystem vào cảnh
+objects.push(solarSystem);
 
-const box = new THREE.Mesh(geometry, material)
-scene.add(box)
+const sunGeometry = new THREE.IcosahedronGeometry(6, 2);
+const sunMaterial = new THREE.MeshPhongMaterial({ emissive: 0xFFFF00 });
+const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+sun.scale.set(5, 5, 5);
+solarSystem.add(sun); // Thêm Mặt Trời vào hệ thống Mặt Trời, không phải trực tiếp vào cảnh
+objects.push(sun);
 
-window.addEventListener('resize', onWindowResize, false)
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    render()
-}
+const earthGeometry = new THREE.IcosahedronGeometry(2, 2);
+const earthMaterial = new THREE.MeshPhongMaterial({ color: 0x2233FF, emissive: 0x112244 });
+const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+earth.position.x = 10;
+solarSystem.add(earth); // Thêm Trái Đất vào hệ thống Mặt Trời
+objects.push(earth);
+sun.add(earth)
 
-function animate() {
-    requestAnimationFrame(animate)
-    box.rotation.x += 0.001;
-    render()
-}
+const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+pointLight.position.set(0, 0, 0);
+scene.add(pointLight);
+
+new OrbitControls(camera, renderer.domElement);
 
 function render() {
-    renderer.render(scene, camera)
+    renderer.render(scene, camera);
 }
 
-animate()
+function animate(time: any) {
+    requestAnimationFrame(animate);
+    time *= 0.001; // Chuyển thời gian từ milliseconds sang seconds
+    
+    objects.forEach((obj : any)=>{
+        obj.rotation.y = time;
+    })
+
+    render();
+}
+
+requestAnimationFrame(animate);
+animate(0.4)
